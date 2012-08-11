@@ -9,7 +9,7 @@
     <version>30</version>
   </parent>
 
-  <groupId>org.codehaus.mojo</groupId>
+  <groupId>cz.atomsoft.maven</groupId>
   <artifactId>buildnumber-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Build Number Maven Plugin</name>
