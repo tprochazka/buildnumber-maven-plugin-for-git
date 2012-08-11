@@ -789,6 +789,7 @@ public class CreateMojo
             scmManager.getProviderByRepository( repository ).getScmType() )
             && this.gitCountCommits )
         {
+            getLog().info( "gitCountCommits enabled, commits count will be used instead of commit hash" );
             InfoItem info = infoResult.getInfoItems().get( 0 );
             
             CommandLineUtils.StringStreamConsumer stderr = new CommandLineUtils.StringStreamConsumer();
