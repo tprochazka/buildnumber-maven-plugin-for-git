@@ -45,21 +45,19 @@ import org.apache.maven.scm.provider.ScmProviderRepository;
 import org.apache.maven.scm.provider.git.repository.GitScmProviderRepository;
 import org.apache.maven.scm.repository.ScmRepository;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
+import org.apache.maven.scm.provider.git.gitexe.command.GitCommandLineUtils;
+import org.apache.maven.scm.provider.git.gitexe.command.changelog.GitChangeLogConsumer;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
  * This mojo is designed to give you a build number. So when you might make 100 builds of version
@@ -165,6 +163,21 @@ public class CreateMojo
      * @since 1.0-beta-1
      */
     private boolean doUpdate;
+
+    /**
+     * If this is made true and SCM repository is GIT, then the revision will be computed
+     * by counting all git commits, i.e. counting lines in the git command
+     * <p/>
+     * git rev-list --all
+     * <p/>
+     * output. When useLastCommitedRevision is set, commit version of a subtree is computed.
+     * <p/>
+     * Thus, gitCountCommits simulates Subversion behavior for git repository.
+     * 
+     * @parameter expression="${maven.buildNumber.gitCountCommits}" default-value="false"
+     * @since 1.2
+     */
+    private boolean gitCountCommits;
 
     /**
      * Specify a message as specified by java.text.MessageFormat. This triggers "items"
@@ -770,8 +783,59 @@ public class CreateMojo
             commandParameters.setInt( CommandParameter.SCM_SHORT_REVISION_LENGTH, this.shortRevisionLength );
         }
 
-        return scmManager.getProviderByRepository( repository ).info( repository.getProviderRepository(), fileSet,
+        InfoScmResult infoResult =  scmManager.getProviderByRepository( repository ).info( repository.getProviderRepository(), fileSet,
                                                                       commandParameters );
+        if ( GitScmProviderRepository.PROTOCOL_GIT.equals(
+            scmManager.getProviderByRepository( repository ).getScmType() )
+            && this.gitCountCommits )
+        {
+            InfoItem info = infoResult.getInfoItems().get( 0 );
+            
+            CommandLineUtils.StringStreamConsumer stderr = new CommandLineUtils.StringStreamConsumer();
+
+            String localId = null;
+            if (this.useLastCommittedRevision) {
+                Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( fileSet.getBasedir(), "log" );
+                cl.createArg().setValue( "-1");
+                cl.createArg().setFile( fileSet.getBasedir() );
+                GitChangeLogConsumer workdirConsumer = new GitChangeLogConsumer( getLogger(), null );
+
+                int exitCode = GitCommandLineUtils.execute( cl, workdirConsumer, stderr, getLogger() );
+                if ( exitCode != 0 )
+                {
+                    return new InfoScmResult( cl.toString(), "The git-log command failed.", stderr.getOutput(), false );
+                }
+                localId = workdirConsumer.getModifications().get( 0 ).getRevision();
+            }
+            Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( fileSet.getBasedir(), "rev-list" );
+            cl.createArg().setValue( "--all" );
+
+            LineConsumer consumer = new LineConsumer();
+
+            int exitCode;
+
+            exitCode = GitCommandLineUtils.execute( cl, consumer, stderr, getLogger() );
+            if ( exitCode != 0 )
+            {
+                return new InfoScmResult( cl.toString(), "The git-log command failed.", stderr.getOutput(), false );
+            }
+            int number = consumer.getLines().size();
+            info.setRevision( "" + number );
+            if (this.useLastCommittedRevision) {
+                // search for working dir HEAD (localId) absolute build number
+                Iterator<String> it = consumer.getLines().iterator();
+                while (it.hasNext()) {
+                    if (it.next().equals( localId) ) {
+                        break;
+                    }
+                    number --;
+                }
+            }
+            info.setLastChangedRevision( "" + number );
+            
+        }
+        
+        return infoResult;
     }
 
 
@@ -910,4 +974,25 @@ public class CreateMojo
     {
         this.shortRevisionLength = shortRevision;
     }
+    
+    private class LineConsumer implements StreamConsumer
+    {
+        private final List<String> lines;
+        
+        public LineConsumer()
+        {
+            lines = new ArrayList<String>();
+        }
+
+        public void consumeLine( String line )
+        {
+            lines.add( line );
+        }
+        
+        public List<String> getLines() {
+            return lines;
+        }
+    }
+
+    
 }
