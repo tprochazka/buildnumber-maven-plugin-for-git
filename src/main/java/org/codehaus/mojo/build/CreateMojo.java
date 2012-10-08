@@ -21,17 +21,20 @@ package org.codehaus.mojo.build;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.Map.Entry;
+
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.scm.CommandParameter;
-import org.apache.maven.scm.CommandParameters;
-import org.apache.maven.scm.ScmException;
-import org.apache.maven.scm.ScmFile;
-import org.apache.maven.scm.ScmFileSet;
-import org.apache.maven.scm.ScmResult;
+import org.apache.maven.scm.*;
 import org.apache.maven.scm.command.info.InfoItem;
 import org.apache.maven.scm.command.info.InfoScmResult;
 import org.apache.maven.scm.command.status.StatusScmResult;
@@ -42,21 +45,13 @@ import org.apache.maven.scm.log.ScmLogger;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.provider.ScmProvider;
 import org.apache.maven.scm.provider.ScmProviderRepository;
+import org.apache.maven.scm.provider.git.gitexe.command.GitCommandLineUtils;
+import org.apache.maven.scm.provider.git.gitexe.command.changelog.GitChangeLogConsumer;
 import org.apache.maven.scm.provider.git.repository.GitScmProviderRepository;
 import org.apache.maven.scm.repository.ScmRepository;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import org.apache.maven.scm.provider.git.gitexe.command.GitCommandLineUtils;
-import org.apache.maven.scm.provider.git.gitexe.command.changelog.GitChangeLogConsumer;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
@@ -173,7 +168,7 @@ public class CreateMojo
      * output. When useLastCommitedRevision is set, commit version of a subtree is computed.
      * <p/>
      * Thus, gitCountCommits simulates Subversion behavior for git repository.
-     * 
+     *
      * @parameter expression="${maven.buildNumber.gitCountCommits}" default-value="false"
      * @since 1.2
      */
@@ -791,13 +786,14 @@ public class CreateMojo
         {
             getLog().info( "gitCountCommits enabled, commits count will be used instead of commit hash" );
             InfoItem info = infoResult.getInfoItems().get( 0 );
-            
+
             CommandLineUtils.StringStreamConsumer stderr = new CommandLineUtils.StringStreamConsumer();
 
             String localId = null;
             if (this.useLastCommittedRevision) {
                 Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( fileSet.getBasedir(), "log" );
                 cl.createArg().setValue( "-1");
+	            cl.createArg().setValue( "--format=raw");
                 cl.createArg().setFile( fileSet.getBasedir() );
                 GitChangeLogConsumer workdirConsumer = new GitChangeLogConsumer( getLogger(), null );
 
@@ -833,9 +829,9 @@ public class CreateMojo
                 }
             }
             info.setLastChangedRevision( "" + number );
-            
+
         }
-        
+
         return infoResult;
     }
 
@@ -975,11 +971,11 @@ public class CreateMojo
     {
         this.shortRevisionLength = shortRevision;
     }
-    
+
     private class LineConsumer implements StreamConsumer
     {
         private final List<String> lines;
-        
+
         public LineConsumer()
         {
             lines = new ArrayList<String>();
@@ -989,11 +985,11 @@ public class CreateMojo
         {
             lines.add( line );
         }
-        
+
         public List<String> getLines() {
             return lines;
         }
     }
 
-    
+
 }
