@@ -23,19 +23,19 @@
   
   
   <description>
-     This plugin is designed to give you a build number. So when you might make 100 builds of version
-     1.0-SNAPSHOT, you can differentiate between them all.
+     This plugin is designed to give you a build number. So when you might make 100 builds of version 1.0-SNAPSHOT, you can differentiate between them all.
+     This is clone of original buildnumber-maven-plugin which allow generate ${buildNumber} as integer instead of hash for GIT.
   </description>
   
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/mojo/trunk/mojo/buildnumber-maven-plugin</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/mojo/trunk/mojo/buildnumber-maven-plugin</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/mojo/trunk/mojo/buildnumber-maven-plugin</url>
+    <connection>scm:git:git://github.com/tprochazka/buildnumber-maven-plugin-for-git.git</connection>
+    <developerConnection>scm:git:git@github.com:tprochazka/buildnumber-maven-plugin-for-git.git</developerConnection>
+    <url>https://github.com/tprochazka/buildnumber-maven-plugin-for-git</url>
   </scm>
 
   <issueManagement>
-    <system>jira</system>
-    <url>http://jira.codehaus.org/browse/MBUILDNUM</url>
+    <system>github</system>
+    <url>https://github.com/tprochazka/buildnumber-maven-plugin-for-git/issues</url>
   </issueManagement>
 
   
