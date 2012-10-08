@@ -17,8 +17,8 @@
 
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
+	    <groupId>cz.atomsoft.maven</groupId>
+	    <artifactId>buildnumber-maven-plugin</artifactId>
         <version>@pom.version@</version>
         <executions>
           <execution>
@@ -31,7 +31,7 @@
               <useLastCommittedRevision>true</useLastCommittedRevision>
             </configuration>
           </execution>
-          
+
           <execution>
             <id>timestampFormat</id>
             <phase>test</phase>
@@ -45,7 +45,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -62,9 +62,9 @@
             </manifestEntries>
           </archive>
         </configuration>
-      </plugin>      
+      </plugin>
     </plugins>
-    
+
   </build>
 
 </project>

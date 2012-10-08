@@ -17,8 +17,8 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>buildnumber-maven-plugin</artifactId>
+	      <groupId>cz.atomsoft.maven</groupId>
+	      <artifactId>buildnumber-maven-plugin</artifactId>
           <version>@pom.version@</version>
           <executions>
             <execution>
@@ -43,13 +43,13 @@
               <configuration>
                 <providerImplementations>
                   <svn>javasvn</svn>
-                </providerImplementations>            
+                </providerImplementations>
                 <useLastCommittedRevision>true</useLastCommittedRevision>
                 <timestampFormat>{0,date,yyyy-MM-dd}</timestampFormat>
               </configuration>
             </execution>
           </executions>
-        </plugin>      
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -57,7 +57,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -74,7 +74,7 @@
             </manifestEntries>
           </archive>
         </configuration>
-      </plugin>      
+      </plugin>
     </plugins>
   </build>
 
@@ -90,8 +90,8 @@
         <pluginManagement>
           <plugins>
             <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>buildnumber-maven-plugin</artifactId>
+	            <groupId>cz.atomsoft.maven</groupId>
+	            <artifactId>buildnumber-maven-plugin</artifactId>
               <version>@pom.version@</version>
               <dependencies>
                 <dependency>

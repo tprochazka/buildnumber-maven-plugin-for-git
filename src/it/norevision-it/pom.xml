@@ -16,8 +16,8 @@
 
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
+	    <groupId>cz.atomsoft.maven</groupId>
+	    <artifactId>buildnumber-maven-plugin</artifactId>
         <version>@pom.version@</version>
         <executions>
           <execution>
@@ -41,11 +41,11 @@
               <useLastCommittedRevision>true</useLastCommittedRevision>
             </configuration>
           </execution>
-          
+
         </executions>
       </plugin>
     </plugins>
-    
+
   </build>
 
 </project>
