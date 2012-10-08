@@ -20,13 +20,13 @@
   <prerequisites>
     <maven>2.0.6</maven>
   </prerequisites>
-  
-  
+
+
   <description>
      This plugin is designed to give you a build number. So when you might make 100 builds of version 1.0-SNAPSHOT, you can differentiate between them all.
      This is clone of original buildnumber-maven-plugin which allow generate ${buildNumber} as integer instead of hash for GIT.
   </description>
-  
+
   <scm>
     <connection>scm:git:git://github.com/tprochazka/buildnumber-maven-plugin-for-git.git</connection>
     <developerConnection>scm:git:git@github.com:tprochazka/buildnumber-maven-plugin-for-git.git</developerConnection>
@@ -38,7 +38,7 @@
     <url>https://github.com/tprochazka/buildnumber-maven-plugin-for-git/issues</url>
   </issueManagement>
 
-  
+
   <licenses>
     <license>
       <name>The MIT License</name>
@@ -46,8 +46,8 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
-  
+
+
 
   <developers>
     <developer>
@@ -70,11 +70,11 @@
     </developer>
   </developers>
 
-    
+
   <properties>
     <maven.scm.version>1.7</maven.scm.version>
     <maven.compiler.source>1.5</maven.compiler.source>
-    <maven.compiler.target>1.5</maven.compiler.target>    
+    <maven.compiler.target>1.5</maven.compiler.target>
     <maven.api.version>2.0.6</maven.api.version>
     <mojo.java.target>1.5</mojo.java.target>
   </properties>
@@ -94,7 +94,7 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>${maven.api.version}</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
@@ -119,7 +119,7 @@
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-provider-bazaar</artifactId>
       <version>${maven.scm.version}</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-provider-svnexe</artifactId>
@@ -129,12 +129,12 @@
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-provider-gitexe</artifactId>
       <version>${maven.scm.version}</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-provider-svn-commons</artifactId>
       <version>${maven.scm.version}</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-provider-cvsexe</artifactId>
@@ -167,13 +167,13 @@
       <exclusions>
         <exclusion>
           <groupId>org.tmatesoft.svnkit</groupId>
-          <artifactId>svnkit</artifactId>        
+          <artifactId>svnkit</artifactId>
         </exclusion>
-      </exclusions>          
-    </dependency>    
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId> 
+      <artifactId>plexus-utils</artifactId>
       <version>2.0.5</version>
     </dependency>
     <dependency>
@@ -184,9 +184,9 @@
       <exclusions>
         <exclusion>
           <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>        
+          <artifactId>jna</artifactId>
         </exclusion>
-      </exclusions> 
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -196,9 +196,21 @@
   </dependencies>
 
   <build>
-  
+
     <pluginManagement>
       <plugins>
+
+        <plugin>
+ 	      <groupId>org.apache.maven.plugins</groupId>
+ 	      <artifactId>maven-release-plugin</artifactId>
+ 	      <version>2.3.2</version>
+	      <inherited>false</inherited>
+ 	      <configuration combine.self="override">
+ 		      <arguments />
+ 		      <pushChanges>false</pushChanges>
+ 	      </configuration>
+        </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-invoker-plugin</artifactId>
@@ -216,10 +228,10 @@
               <goal>package</goal>
             </goals>
             <settingsFile>src/it/settings.xml</settingsFile>
-             
+
             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
             <cloneAllFiles>true</cloneAllFiles>
-            
+
           </configuration>
           <executions>
             <execution>
@@ -234,7 +246,7 @@
 
       </plugins>
     </pluginManagement>
-    
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -243,7 +255,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <profiles>
     <profile>
       <id>run-its</id>
@@ -286,7 +298,7 @@
         </plugins>
       </build>
     </profile>
-    
+
     <profile>
       <id>devlocal</id>
       <build>
@@ -319,14 +331,14 @@
               <configuration>
                 <providerImplementations>
                   <svn>javasvn</svn>
-                </providerImplementations>            
+                </providerImplementations>
                 <useLastCommittedRevision>true</useLastCommittedRevision>
                 <timestampFormat>{0,date,yyyy-MM-dd}</timestampFormat>
               </configuration>
             </execution>
           </executions>
-        </plugin>      
-      </plugins>      
+        </plugin>
+      </plugins>
       </build>
     </profile>
 
@@ -386,5 +398,5 @@
       </snapshots>
     </repository>
   </repositories-->
-  
+
 </project>
