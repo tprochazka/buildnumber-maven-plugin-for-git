@@ -118,11 +118,25 @@ public class CreateMojo
     /**
      * You can rename the buildNumber property name to another property name if desired.
      *
+     * Build number contains always number also for SCM which use hash like GIT or HQ,
+     * for these SCMs is use commits counts as buildNumber.
+     *
      * @parameter expression="${maven.buildNumber.buildNumberPropertyName}"
      * default-value="buildNumber"
      * @since 1.0-beta-1
      */
     private String buildNumberPropertyName;
+
+    /**
+     * You can rename the buildId property name to another property name if desired.
+     *
+     * BuildId can contain number or string depending on SCM (for example GIT use hash string)
+     *
+     * @parameter expression="${maven.buildNumber.buildIdPropertyName}"
+     * default-value="buildId"
+     * @since 1.3
+     */
+    private String buildIdPropertyName;
 
     /**
      * You can rename the timestamp property name to another property name if desired.
@@ -158,21 +172,6 @@ public class CreateMojo
      * @since 1.0-beta-1
      */
     private boolean doUpdate;
-
-    /**
-     * If this is made true and SCM repository is GIT, then the revision will be computed
-     * by counting all git commits, i.e. counting lines in the git command
-     * <p/>
-     * git rev-list --all
-     * <p/>
-     * output. When useLastCommitedRevision is set, commit version of a subtree is computed.
-     * <p/>
-     * Thus, gitCountCommits simulates Subversion behavior for git repository.
-     *
-     * @parameter expression="${maven.buildNumber.gitCountCommits}" default-value="false"
-     * @since 1.2
-     */
-    private boolean gitCountCommits;
 
     /**
      * Specify a message as specified by java.text.MessageFormat. This triggers "items"
@@ -289,6 +288,16 @@ public class CreateMojo
 
 
     /**
+     * You can increment build number by this value.
+     * It is useful for Android app if you migrate from SVN to GIT and need consistent incremental build.
+     *
+     * @parameter expression="${maven.buildNumber.buildNumberIncrement}"
+     * default-value="0"
+     * @since 1.3
+     */
+    private int buildNumberIncrement;
+
+    /**
      * @parameter expression="${session}"
      * @readonly
      * @required
@@ -298,6 +307,7 @@ public class CreateMojo
     private ScmLogDispatcher logger;
 
     private String revision;
+    private String commitNumber;
 
     /**
      * Max length of a revision id (used only for git)
@@ -414,6 +424,7 @@ public class CreateMojo
             }
 
             revision = format( itemAry );
+	        commitNumber = revision;
         }
         else
         {
@@ -460,7 +471,8 @@ public class CreateMojo
                     getLog().info( "Updating project files from SCM: skipped." );
                 }
             }
-            revision = getRevision();
+            revision = getRevision(false);
+            commitNumber = getRevision(true);
         }
 
         if ( project != null )
@@ -471,11 +483,15 @@ public class CreateMojo
                 timestamp = MessageFormat.format( timestampFormat, new Object[]{ now } );
             }
 
-            getLog().info( MessageFormat.format( "Storing buildNumber: {0} at timestamp: {1}",
+            getLog().info( MessageFormat.format( "Storing buildId: {0} at timestamp: {1}",
                                                  new Object[]{ revision, timestamp } ) );
+
+            getLog().info( MessageFormat.format( "Storing buildNumber: {0}", new Object[]{ commitNumber } ) );
+
             if ( revision != null )
             {
-                project.getProperties().put( buildNumberPropertyName, revision );
+                project.getProperties().put( buildIdPropertyName, revision );
+                project.getProperties().put( buildNumberPropertyName, formatBuildNumber(commitNumber) );
             }
             project.getProperties().put( timestampPropertyName, timestamp );
 
@@ -492,7 +508,8 @@ public class CreateMojo
                     MavenProject nextProj = (MavenProject) projIter.next();
                     if ( revision != null )
                     {
-                        nextProj.getProperties().put( this.buildNumberPropertyName, revision );
+                        project.getProperties().put( buildIdPropertyName, revision );
+                        project.getProperties().put( buildNumberPropertyName, formatBuildNumber(commitNumber) );
                     }
                     nextProj.getProperties().put( this.timestampPropertyName, timestamp );
                     nextProj.getProperties().put( this.scmBranchPropertyName, scmBranch );
@@ -500,6 +517,17 @@ public class CreateMojo
             }
         }
     }
+
+    private String formatBuildNumber(String input)
+    {
+        if (StringUtils.isNumeric(input))
+        {
+            return String.valueOf(Integer.parseInt(commitNumber) + this.buildNumberIncrement);
+        } else {
+            return input;
+        }
+    }
+
 
     /**
      * Formats the given argument using the configured format template and locale.
@@ -620,7 +648,7 @@ public class CreateMojo
     }
 
     /**
-     * Get the branch info for this revision from the repository. For svn, it is in svn info.
+     * Get the branch infoCommitNumber for this revision from the repository. For svn, it is in svn infoCommitNumber.
      *
      * @return
      * @throws MojoExecutionException
@@ -633,7 +661,7 @@ public class CreateMojo
         try
         {
             ScmRepository repository = getScmRepository();
-            InfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
+            InfoScmResult scmResult = infoCommitId(repository, new ScmFileSet(scmDirectory));
             if ( scmResult == null || !scmResult.isSuccess() )
             {
                 getLog().debug( "Cannot get the branch information from the scm repository : " + ( scmResult == null
@@ -693,12 +721,12 @@ public class CreateMojo
     }
 
     /**
-     * Get the revision info from the repository. For svn, it is svn info
+     * Get the revision infoCommitNumber from the repository. For svn, it is svn infoCommitNumber
      *
      * @return
      * @throws MojoExecutionException
      */
-    public String getRevision()
+    public String getRevision(boolean alwaysNumber)
         throws MojoExecutionException
     {
 
@@ -711,7 +739,10 @@ public class CreateMojo
         {
             ScmRepository repository = getScmRepository();
 
-            InfoScmResult scmResult = info( repository, new ScmFileSet( scmDirectory ) );
+            InfoScmResult scmResult = infoCommitId(repository, new ScmFileSet(scmDirectory));
+            if (alwaysNumber) {
+                scmResult = infoCommitNumber(repository, new ScmFileSet(scmDirectory), scmResult);
+            }
 
             if ( scmResult == null || scmResult.getInfoItems().isEmpty() )
             {
@@ -722,7 +753,7 @@ public class CreateMojo
 
             InfoItem info = scmResult.getInfoItems().get( 0 );
 
-            if ( useLastCommittedRevision )
+            if ( useLastCommittedRevision && info.getLastChangedRevision() != null)
             {
                 return info.getLastChangedRevision();
             }
@@ -751,7 +782,7 @@ public class CreateMojo
     }
 
     /**
-     * Get info from scm.
+     * Get info from scm with revision field as commit id (number for SVN and commit hash for GIT)
      *
      * @param repository
      * @param fileSet
@@ -760,8 +791,7 @@ public class CreateMojo
      * @todo this should be rolled into org.apache.maven.scm.provider.ScmProvider and
      * org.apache.maven.scm.provider.svn.SvnScmProvider
      */
-    public InfoScmResult info( ScmRepository repository, ScmFileSet fileSet )
-        throws ScmException
+    public InfoScmResult infoCommitId(ScmRepository repository, ScmFileSet fileSet) throws ScmException
     {
         CommandParameters commandParameters = new CommandParameters();
         //only for Git, we will make a test for shortRevisionLength parameter
@@ -778,13 +808,31 @@ public class CreateMojo
             commandParameters.setInt( CommandParameter.SCM_SHORT_REVISION_LENGTH, this.shortRevisionLength );
         }
 
-        InfoScmResult infoResult =  scmManager.getProviderByRepository( repository ).info( repository.getProviderRepository(), fileSet,
-                                                                      commandParameters );
-        if ( GitScmProviderRepository.PROTOCOL_GIT.equals(
-            scmManager.getProviderByRepository( repository ).getScmType() )
-            && this.gitCountCommits )
+        return scmManager.getProviderByRepository( repository ).info( repository.getProviderRepository(), fileSet, commandParameters );
+    }
+
+    /**
+     * Get info from scm with revsion field as number of commit (revision for SVN and commits count for GIT)
+     *
+     * If SCM repository is GIT, then the revision will be computed
+     * by counting all git commits, i.e. counting lines in the git command.
+     *
+     * <p>git rev-list --all
+     * output. When useLastCommitedRevision is set, commit version of a subtree is computed.
+     * <p/>
+     * Thus, gitCountCommits simulates Subversion behavior for git repository.
+     *
+     * @param repository
+     * @param fileSet
+     * @param infoResult result from {@link #infoCommitId(org.apache.maven.scm.repository.ScmRepository, org.apache.maven.scm.ScmFileSet)}
+     * @return
+     * @throws ScmException
+     * org.apache.maven.scm.provider.svn.SvnScmProvider
+     */
+    public InfoScmResult infoCommitNumber(ScmRepository repository, ScmFileSet fileSet, InfoScmResult infoResult) throws ScmException
+    {
+        if ( GitScmProviderRepository.PROTOCOL_GIT.equals(scmManager.getProviderByRepository( repository ).getScmType() ))
         {
-            getLog().info( "gitCountCommits enabled, commits count will be used instead of commit hash" );
             InfoItem info = infoResult.getInfoItems().get( 0 );
 
             CommandLineUtils.StringStreamConsumer stderr = new CommandLineUtils.StringStreamConsumer();
@@ -793,7 +841,7 @@ public class CreateMojo
             if (this.useLastCommittedRevision) {
                 Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( fileSet.getBasedir(), "log" );
                 cl.createArg().setValue( "-1");
-	            cl.createArg().setValue( "--format=raw");
+                cl.createArg().setValue( "--format=raw");
                 cl.createArg().setFile( fileSet.getBasedir() );
                 GitChangeLogConsumer workdirConsumer = new GitChangeLogConsumer( getLogger(), null );
 
@@ -834,6 +882,7 @@ public class CreateMojo
 
         return infoResult;
     }
+    
 
 
     /**

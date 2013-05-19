@@ -22,7 +22,6 @@ package org.codehaus.mojo.build;
  */
 
 import java.io.File;
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -56,7 +55,7 @@ public class TestCreateMojo
 
             mojo.execute();
 
-            String rev = mojo.getRevision();
+            String rev = mojo.getRevision(false);
 
             System.out.println( "rev = " + rev );
 
@@ -85,19 +84,19 @@ public class TestCreateMojo
         mojo.setItems( Arrays.asList( new Object[] { date } ) );
 
         mojo.execute();
-        //assertEquals( DateFormat.getDateInstance( DateFormat.DEFAULT ).format( date ), mojo.getRevision() );
+        //assertEquals( DateFormat.getDateInstance( DateFormat.DEFAULT ).format( date ), mojo.getRevision(false) );
 
         mojo.setLocale( "en" );
         mojo.execute();
-        assertEquals( "Jan 1, 1970", mojo.getRevision() );
+        assertEquals( "Jan 1, 1970", mojo.getRevision(false) );
 
         mojo.setLocale( "fi" );
         mojo.execute();
-        assertEquals( "1.1.1970", mojo.getRevision() );
+        assertEquals( "1.1.1970", mojo.getRevision(false) );
 
         mojo.setLocale( "de" );
         mojo.execute();
-        assertEquals( "01.01.1970", mojo.getRevision() );
+        assertEquals( "01.01.1970", mojo.getRevision(false) );
     }
 
     public void testSequenceFormat()
@@ -113,7 +112,7 @@ public class TestCreateMojo
 
         mojo.execute();
 
-        String rev = mojo.getRevision();
+        String rev = mojo.getRevision(false);
 
         System.out.println( "rev = " + rev );
 
