@@ -21,20 +21,17 @@ package org.codehaus.mojo.build;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.Map.Entry;
-
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.scm.*;
+import org.apache.maven.scm.CommandParameter;
+import org.apache.maven.scm.CommandParameters;
+import org.apache.maven.scm.ScmException;
+import org.apache.maven.scm.ScmFile;
+import org.apache.maven.scm.ScmFileSet;
+import org.apache.maven.scm.ScmResult;
 import org.apache.maven.scm.command.info.InfoItem;
 import org.apache.maven.scm.command.info.InfoScmResult;
 import org.apache.maven.scm.command.status.StatusScmResult;
@@ -53,6 +50,22 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * This mojo is designed to give you a build number. So when you might make 100 builds of version
@@ -723,6 +736,7 @@ public class CreateMojo
     /**
      * Get the revision infoCommitNumber from the repository. For svn, it is svn infoCommitNumber
      *
+     * @param alwaysNumber will force return number instead of commit hash, it will be evaluated as numbers of commits
      * @return
      * @throws MojoExecutionException
      */
@@ -740,12 +754,13 @@ public class CreateMojo
             ScmRepository repository = getScmRepository();
 
             InfoScmResult scmResult = infoCommitId(repository, new ScmFileSet(scmDirectory));
-            if (alwaysNumber) {
+            if (alwaysNumber && !scmResult.getInfoItems().isEmpty()) {
                 scmResult = infoCommitNumber(repository, new ScmFileSet(scmDirectory), scmResult);
             }
 
             if ( scmResult == null || scmResult.getInfoItems().isEmpty() )
             {
+	            getLog().warn("Cannot determine build information, project must be checked out from SCM (folder like .git,.svn, etc. must be available).");
                 return ( !StringUtils.isEmpty( revisionOnScmFailure ) ) ? revisionOnScmFailure : null;
             }
 
