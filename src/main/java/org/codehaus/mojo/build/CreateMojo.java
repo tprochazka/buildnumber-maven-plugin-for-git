@@ -754,7 +754,7 @@ public class CreateMojo
             ScmRepository repository = getScmRepository();
 
             InfoScmResult scmResult = infoCommitId(repository, new ScmFileSet(scmDirectory));
-            if (alwaysNumber && !scmResult.getInfoItems().isEmpty()) {
+            if (alwaysNumber && scmResult !=null && !scmResult.getInfoItems().isEmpty()) {
                 scmResult = infoCommitNumber(repository, new ScmFileSet(scmDirectory), scmResult);
             }
 
