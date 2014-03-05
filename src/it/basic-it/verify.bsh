@@ -52,8 +52,23 @@ try
         return false;    
     }  
     // assert we can parse it as long
-    Long.parseLong( scmRev );
-    
+    long scmRevLong = Long.parseLong( scmRev );
+
+    String incRev = manifest.get( new Attributes.Name( "INC-Revision" ) );
+    if ( incRev == null || incRev.length() < 1 )
+    {
+        System.err.println( "No manifest entry INC-Revision" );
+        return false;
+    }
+    // assert we can parse it as long
+    long incRevLong = Long.parseLong( incRev );
+
+    if ( incRevLong - scmRevLong != 13)
+    {
+        System.err.println( "INC-Revision does not use buildNumberIncrement property" );
+        return false;
+    }
+
 }
 catch( Throwable e )
 {

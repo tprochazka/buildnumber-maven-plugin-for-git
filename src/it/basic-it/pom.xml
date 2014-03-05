@@ -41,6 +41,17 @@
               <timestampFormat>{0,date,yyyy-MM-dd}</timestampFormat>
             </configuration>
           </execution>
+
+          <execution>
+            <id>incrementedBuildNumber</id>
+            <goals>
+              <goal>create</goal>
+            </goals>
+            <configuration>
+              <buildNumberPropertyName>incrementedBuildNumber</buildNumberPropertyName>
+              <buildNumberIncrement>13</buildNumberIncrement>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -56,6 +67,7 @@
             </manifest>
             <manifestEntries>
               <SCM-Revision>${buildNumber}</SCM-Revision>
+              <INC-Revision>${incrementedBuildNumber}</INC-Revision>
               <Build-Date>${timestamp}</Build-Date>
             </manifestEntries>
           </archive>
