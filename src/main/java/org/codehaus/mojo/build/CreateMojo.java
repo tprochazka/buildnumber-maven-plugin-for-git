@@ -499,7 +499,7 @@ public class CreateMojo
             getLog().info( MessageFormat.format( "Storing buildId: {0} at timestamp: {1}",
                                                  new Object[]{ revision, timestamp } ) );
 
-            getLog().info( MessageFormat.format( "Storing buildNumber: {0}", new Object[]{ commitNumber } ) );
+            getLog().info( MessageFormat.format( "Storing buildNumber: {0}", new Object[]{ formatBuildNumber(commitNumber) } ) );
 
             if ( revision != null )
             {
