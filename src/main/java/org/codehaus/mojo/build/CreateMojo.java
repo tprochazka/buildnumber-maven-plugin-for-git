@@ -515,14 +515,13 @@ public class CreateMojo
             // Add the revision and timestamp properties to each project in the reactor
             if ( getRevisionOnlyOnce && reactorProjects != null )
             {
-                Iterator projIter = reactorProjects.iterator();
-                while ( projIter.hasNext() )
+                for ( Object nextProjObj : reactorProjects )
                 {
-                    MavenProject nextProj = (MavenProject) projIter.next();
+                    MavenProject nextProj = (MavenProject) nextProjObj;
                     if ( revision != null )
                     {
-                        project.getProperties().put( buildIdPropertyName, revision );
-                        project.getProperties().put( buildNumberPropertyName, formatBuildNumber(commitNumber) );
+                        nextProj.getProperties().put( buildIdPropertyName, revision );
+                        nextProj.getProperties().put( buildNumberPropertyName, formatBuildNumber(commitNumber) );
                     }
                     nextProj.getProperties().put( this.timestampPropertyName, timestamp );
                     nextProj.getProperties().put( this.scmBranchPropertyName, scmBranch );
