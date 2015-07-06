@@ -521,8 +521,8 @@ public class CreateMojo
                     MavenProject nextProj = (MavenProject) projIter.next();
                     if ( revision != null )
                     {
-                        project.getProperties().put( buildIdPropertyName, revision );
-                        project.getProperties().put( buildNumberPropertyName, formatBuildNumber(commitNumber) );
+                        nextProj.getProperties().put( buildIdPropertyName, revision );
+                        nextProj.getProperties().put( buildNumberPropertyName, formatBuildNumber(commitNumber) );
                     }
                     nextProj.getProperties().put( this.timestampPropertyName, timestamp );
                     nextProj.getProperties().put( this.scmBranchPropertyName, scmBranch );
